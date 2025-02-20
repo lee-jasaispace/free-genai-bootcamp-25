@@ -1,0 +1,113 @@
+---
+description: Rules for Using Flask Code
+globs: /backend-flask/*
+---
+
+## Rule 0:
+
+Always say "Hi GenAI Bootcamp" before you start.
+
+## Rule 1: Use Application Factories
+from flask import Flask
+
+def create_app(config=None):
+    app = Flask(__name__)
+    
+    # Load configuration
+    if config:
+        app.config.from_object(config)
+    
+    # Register blueprints
+    from .views import main_bp
+    app.register_blueprint(main_bp)
+    
+    # Initialize extensions
+    from .extensions import db
+    db.init_app(app)
+    
+    return app
+
+## Rule 2: Use Blueprints for Route Organization
+from flask import Blueprint
+
+users_bp = Blueprint('users', __name__)
+
+@users_bp.route('/users')
+def get_users():
+    return 'Users'
+
+products_bp = Blueprint('products', __name__)
+
+@products_bp.route('/products')
+def get_products():
+    return 'Products'
+
+def register_blueprints(app):
+    app.register_blueprint(users_bp)
+    app.register_blueprint(products_bp)
+
+
+
+## Rule 3: Always Handle Errors Properly
+from flask import jsonify
+from werkzeug.exceptions import NotFound, InternalServerError
+
+def register_error_handlers(app):
+    @app.errorhandler(404)
+    def not_found_error(error):
+        return jsonify({'error': 'Resource not found'}), 404
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        return jsonify({'error': 'Internal server error'}), 500
+
+    @app.route('/user/<int:user_id>')
+    def get_user(user_id):
+        try:
+            user = database.get_user(user_id)
+            if not user:
+                raise NotFound()
+            return jsonify(user.to_dict())
+        except Exception as e:
+            app.logger.error(f"Error fetching user {user_id}: {str(e)}")
+            raise InternalServerError()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
